@@ -196,28 +196,6 @@ export default function Login() {
         <div className="bg-card rounded-2xl border border-border p-8 shadow-sm">
           {/* Tabs */}
           <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => setIsLogin(true)}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
-                isLogin
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              <LogIn className="w-4 h-4 inline mr-2" />
-              Entrar
-            </button>
-            <button
-              onClick={() => setIsLogin(false)}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
-                !isLogin
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              <UserPlus className="w-4 h-4 inline mr-2" />
-              Cadastrar
-            </button>
           </div>
 
           {isLogin ? (
