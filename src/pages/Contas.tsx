@@ -2,9 +2,19 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, User, Clock, DollarSign } from 'lucide-react';
+import { ArrowLeft, Plus, User, Clock, DollarSign, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Mesa {
   id: string;
@@ -16,6 +26,7 @@ interface Conta {
   nome_responsavel: string;
   total: number;
   created_at: string;
+  fechada: boolean;
 }
 
 export default function Contas() {
@@ -26,6 +37,7 @@ export default function Contas() {
   const [loading, setLoading] = useState(true);
   const [showNewConta, setShowNewConta] = useState(false);
   const [nomeResponsavel, setNomeResponsavel] = useState('');
+  const [contaToClose, setContaToClose] = useState<Conta | null>(null);
 
   const fetchData = async () => {
     if (!mesaId) return;
@@ -85,6 +97,24 @@ export default function Contas() {
     toast.success('Conta criada com sucesso!');
     setNomeResponsavel('');
     setShowNewConta(false);
+    fetchData();
+  };
+
+  const handleCloseConta = async () => {
+    if (!contaToClose) return;
+
+    const { error } = await supabase
+      .from('contas')
+      .update({ fechada: true })
+      .eq('id', contaToClose.id);
+
+    if (error) {
+      toast.error('Erro ao fechar conta');
+      return;
+    }
+
+    toast.success(`Conta de ${contaToClose.nome_responsavel} fechada!`);
+    setContaToClose(null);
     fetchData();
   };
 
@@ -179,39 +209,94 @@ export default function Contas() {
         ) : (
           <div className="space-y-4">
             {contas.map((conta, index) => (
-              <button
+              <div
                 key={conta.id}
-                onClick={() => navigate(`/mesas/${mesaId}/contas/${conta.id}`)}
-                className="conta-card w-full text-left animate-fade-in"
+                className={`conta-card animate-fade-in ${conta.fechada ? 'opacity-60' : ''}`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-conta-active/10 flex items-center justify-center">
-                      <User className="w-6 h-6 text-conta-active" />
+                <button
+                  onClick={() => navigate(`/mesas/${mesaId}/contas/${conta.id}`)}
+                  className="w-full text-left"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                        conta.fechada ? 'bg-muted' : 'bg-conta-active/10'
+                      }`}>
+                        {conta.fechada ? (
+                          <CheckCircle className="w-6 h-6 text-muted-foreground" />
+                        ) : (
+                          <User className="w-6 h-6 text-conta-active" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">
+                          {conta.nome_responsavel}
+                        </h3>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          {formatDate(conta.created_at)}
+                          {conta.fechada && (
+                            <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded">Fechada</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">
-                        {conta.nome_responsavel}
-                      </h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="w-3 h-3" />
-                        {formatDate(conta.created_at)}
+                    <div className="text-right">
+                      <div className="flex items-center gap-1 text-lg font-bold price-tag">
+                        <DollarSign className="w-4 h-4" />
+                        {formatCurrency(conta.total)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        +10%: {formatCurrency(conta.total * 0.1)}
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 text-lg font-bold price-tag">
-                      <DollarSign className="w-4 h-4" />
-                      {formatCurrency(conta.total)}
-                    </div>
-                  </div>
-                </div>
-              </button>
+                </button>
+                {!conta.fechada && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setContaToClose(conta);
+                    }}
+                    className="mt-3 w-full py-2 flex items-center justify-center gap-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    Fechar Conta
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}
       </main>
+
+      {/* Close Conta Dialog */}
+      <AlertDialog open={!!contaToClose} onOpenChange={() => setContaToClose(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Fechar conta de {contaToClose?.nome_responsavel}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <div className="space-y-2">
+                <p>Subtotal: {formatCurrency(contaToClose?.total || 0)}</p>
+                <p>10% Serviço: {formatCurrency((contaToClose?.total || 0) * 0.1)}</p>
+                <p className="font-semibold text-foreground">
+                  Total: {formatCurrency((contaToClose?.total || 0) * 1.1)}
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCloseConta}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Fechar Conta
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

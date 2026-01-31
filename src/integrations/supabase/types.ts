@@ -17,6 +17,7 @@ export type Database = {
       contas: {
         Row: {
           created_at: string
+          fechada: boolean
           id: string
           mesa_id: string
           nome_responsavel: string
@@ -24,6 +25,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          fechada?: boolean
           id?: string
           mesa_id: string
           nome_responsavel: string
@@ -31,6 +33,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          fechada?: boolean
           id?: string
           mesa_id?: string
           nome_responsavel?: string

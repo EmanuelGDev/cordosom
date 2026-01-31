@@ -2,9 +2,19 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, LayoutGrid, Clock } from 'lucide-react';
+import { ArrowLeft, Plus, LayoutGrid, Clock, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Mesa {
   id: string;
@@ -18,6 +28,7 @@ export default function Mesas() {
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewMesa, setShowNewMesa] = useState(false);
+  const [mesaToClose, setMesaToClose] = useState<Mesa | null>(null);
   const [newMesaNumero, setNewMesaNumero] = useState('');
 
   const fetchMesas = async () => {
@@ -64,6 +75,30 @@ export default function Mesas() {
     toast.success(`Mesa ${numero} criada com sucesso!`);
     setNewMesaNumero('');
     setShowNewMesa(false);
+    fetchMesas();
+  };
+
+  const handleCloseMesa = async () => {
+    if (!mesaToClose) return;
+
+    const { error } = await supabase
+      .from('mesas')
+      .update({ aberta: false })
+      .eq('id', mesaToClose.id);
+
+    if (error) {
+      toast.error('Erro ao fechar mesa');
+      return;
+    }
+
+    // Close all accounts of this table
+    await supabase
+      .from('contas')
+      .update({ fechada: true })
+      .eq('mesa_id', mesaToClose.id);
+
+    toast.success(`Mesa ${mesaToClose.numero} fechada!`);
+    setMesaToClose(null);
     fetchMesas();
   };
 
@@ -149,32 +184,68 @@ export default function Mesas() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {mesas.map((mesa, index) => (
-              <button
+              <div
                 key={mesa.id}
-                onClick={() => navigate(`/mesas/${mesa.id}/contas`)}
-                className="mesa-card text-left"
+                className="mesa-card animate-fade-in"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-mesa-open/10 flex items-center justify-center">
-                    <LayoutGrid className="w-6 h-6 text-mesa-open" />
+                <button
+                  onClick={() => navigate(`/mesas/${mesa.id}/contas`)}
+                  className="w-full text-left"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-12 h-12 rounded-xl bg-mesa-open/10 flex items-center justify-center">
+                      <LayoutGrid className="w-6 h-6 text-mesa-open" />
+                    </div>
+                    <span className="status-badge status-badge-open">
+                      Aberta
+                    </span>
                   </div>
-                  <span className="status-badge status-badge-open">
-                    Aberta
-                  </span>
-                </div>
-                <h3 className="text-xl font-display font-bold text-foreground mb-2">
-                  Mesa {mesa.numero}
-                </h3>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="w-4 h-4" />
-                  {formatDate(mesa.created_at)}
-                </div>
-              </button>
+                  <h3 className="text-xl font-display font-bold text-foreground mb-2">
+                    Mesa {mesa.numero}
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="w-4 h-4" />
+                    {formatDate(mesa.created_at)}
+                  </div>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMesaToClose(mesa);
+                  }}
+                  className="mt-4 w-full py-2 flex items-center justify-center gap-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                >
+                  <XCircle className="w-4 h-4" />
+                  Fechar Mesa
+                </button>
+              </div>
             ))}
           </div>
         )}
       </main>
+
+      {/* Close Mesa Dialog */}
+      <AlertDialog open={!!mesaToClose} onOpenChange={() => setMesaToClose(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Fechar Mesa {mesaToClose?.numero}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação irá fechar a mesa e todas as contas vinculadas a ela.
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCloseMesa}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Fechar Mesa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
