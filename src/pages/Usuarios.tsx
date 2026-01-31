@@ -3,7 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, Users, Shield, User } from 'lucide-react';
+import { ArrowLeft, Plus, Users, Shield, User, Pencil, Trash2, X, Check } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface UserProfile {
   user_id: string;
@@ -25,6 +35,14 @@ export default function Usuarios() {
   const [cpf, setCpf] = useState('');
   const [password, setPassword] = useState('');
   const [isNewAdmin, setIsNewAdmin] = useState(false);
+
+  // Edit state
+  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [editNome, setEditNome] = useState('');
+  const [editIsAdmin, setEditIsAdmin] = useState(false);
+
+  // Delete state
+  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     if (!isAdmin) {
@@ -161,6 +179,83 @@ export default function Usuarios() {
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   };
 
+  const startEditing = (user: UserProfile) => {
+    setEditingUser(user);
+    setEditNome(user.nome);
+    setEditIsAdmin(user.role === 'admin');
+  };
+
+  const cancelEditing = () => {
+    setEditingUser(null);
+    setEditNome('');
+    setEditIsAdmin(false);
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUser || !editNome.trim()) {
+      toast.error('Nome é obrigatório');
+      return;
+    }
+
+    // Update profile name
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ nome: editNome.trim() })
+      .eq('user_id', editingUser.user_id);
+
+    if (profileError) {
+      toast.error('Erro ao atualizar nome');
+      return;
+    }
+
+    // Update role if changed
+    const currentIsAdmin = editingUser.role === 'admin';
+    if (editIsAdmin !== currentIsAdmin) {
+      // Delete existing role
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', editingUser.user_id);
+
+      // Insert new role
+      await supabase
+        .from('user_roles')
+        .insert({
+          user_id: editingUser.user_id,
+          role: editIsAdmin ? 'admin' : 'user',
+        });
+    }
+
+    toast.success('Usuário atualizado!');
+    cancelEditing();
+    fetchUsers();
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    // Delete from user_roles first (due to potential FK)
+    await supabase
+      .from('user_roles')
+      .delete()
+      .eq('user_id', userToDelete.user_id);
+
+    // Delete from profiles
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('user_id', userToDelete.user_id);
+
+    if (error) {
+      toast.error('Erro ao excluir usuário');
+      return;
+    }
+
+    toast.success('Usuário excluído!');
+    setUserToDelete(null);
+    fetchUsers();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -279,36 +374,106 @@ export default function Usuarios() {
             {users.map((user, index) => (
               <div
                 key={user.user_id}
-                className="flex items-center justify-between p-4 bg-card border border-border rounded-lg animate-fade-in"
+                className="p-4 bg-card border border-border rounded-lg animate-fade-in"
                 style={{ animationDelay: `${index * 30}ms` }}
               >
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    user.role === 'admin' ? 'bg-primary/10' : 'bg-muted'
-                  }`}>
-                    {user.role === 'admin' ? (
-                      <Shield className="w-5 h-5 text-primary" />
-                    ) : (
-                      <User className="w-5 h-5 text-muted-foreground" />
-                    )}
+                {editingUser?.user_id === user.user_id ? (
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={editNome}
+                      onChange={(e) => setEditNome(e.target.value)}
+                      className="input-field"
+                      placeholder="Nome"
+                    />
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={editIsAdmin}
+                        onChange={(e) => setEditIsAdmin(e.target.checked)}
+                        className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
+                      />
+                      <span className="text-sm font-medium text-foreground">
+                        Administrador
+                      </span>
+                    </label>
+                    <div className="flex gap-2">
+                      <button onClick={handleUpdateUser} className="btn-primary flex items-center gap-2">
+                        <Check className="w-4 h-4" />
+                        Salvar
+                      </button>
+                      <button onClick={cancelEditing} className="btn-secondary flex items-center gap-2">
+                        <X className="w-4 h-4" />
+                        Cancelar
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-foreground">{user.nome}</p>
-                    <p className="text-sm text-muted-foreground">
-                      CPF: {displayCPF(user.cpf)}
-                    </p>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        user.role === 'admin' ? 'bg-primary/10' : 'bg-muted'
+                      }`}>
+                        {user.role === 'admin' ? (
+                          <Shield className="w-5 h-5 text-primary" />
+                        ) : (
+                          <User className="w-5 h-5 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">{user.nome}</p>
+                        <p className="text-sm text-muted-foreground">
+                          CPF: {displayCPF(user.cpf)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`status-badge ${
+                        user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {user.role === 'admin' ? 'Admin' : 'Usuário'}
+                      </span>
+                      <button
+                        onClick={() => startEditing(user)}
+                        className="btn-icon hover:bg-primary/10 hover:text-primary"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setUserToDelete(user)}
+                        className="btn-icon hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <span className={`status-badge ${
-                  user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                }`}>
-                  {user.role === 'admin' ? 'Admin' : 'Usuário'}
-                </span>
+                )}
               </div>
             ))}
           </div>
         )}
       </main>
+
+      {/* Delete User Dialog */}
+      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir {userToDelete?.nome}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação irá excluir permanentemente o usuário. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

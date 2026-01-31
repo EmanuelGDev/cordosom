@@ -16,6 +16,7 @@ interface Conta {
   nome_responsavel: string;
   total: number;
   created_at: string;
+  fechada: boolean;
 }
 
 interface ItemConta {
@@ -160,10 +161,19 @@ export default function ContaDetalhes() {
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Total</p>
-              <p className="text-2xl font-bold price-tag">
+              <p className="text-sm text-muted-foreground">Subtotal</p>
+              <p className="text-xl font-bold price-tag">
                 {formatCurrency(conta?.total || 0)}
               </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                +10%: {formatCurrency((conta?.total || 0) * 0.1)}
+              </p>
+              <p className="text-sm font-semibold text-foreground">
+                Total: {formatCurrency((conta?.total || 0) * 1.1)}
+              </p>
+              {conta?.fechada && (
+                <span className="mt-1 inline-block text-xs bg-muted px-2 py-0.5 rounded">Fechada</span>
+              )}
             </div>
           </div>
         </div>
@@ -239,7 +249,7 @@ export default function ContaDetalhes() {
               </div>
             )}
           </div>
-        ) : (
+        ) : !conta?.fechada ? (
           <button
             onClick={() => setShowAddProduct(true)}
             className="w-full mb-6 py-4 border-2 border-dashed border-border rounded-xl text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
@@ -247,7 +257,7 @@ export default function ContaDetalhes() {
             <Plus className="w-5 h-5" />
             Adicionar Produto
           </button>
-        )}
+        ) : null}
 
         {/* Loading */}
         {loading ? (
@@ -292,12 +302,14 @@ export default function ContaDetalhes() {
                   <span className="font-semibold price-tag">
                     {formatCurrency(item.preco)}
                   </span>
-                  <button
-                    onClick={() => handleRemoveItem(item.id)}
-                    className="btn-icon hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  {!conta?.fechada && (
+                    <button
+                      onClick={() => handleRemoveItem(item.id)}
+                      className="btn-icon hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
