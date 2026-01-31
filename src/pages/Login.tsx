@@ -177,25 +177,47 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8 safe-area-inset">
       <div className="w-full max-w-md animate-fade-in">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <UtensilsCrossed className="w-8 h-8 text-primary" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary/10 mb-3 sm:mb-4">
+            <UtensilsCrossed className="w-7 h-7 sm:w-8 sm:h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-display font-bold text-foreground">
-            Mesa Manager
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">
+            Cor Do Som
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-sm sm:text-base text-muted-foreground mt-2">
             Sistema de Gerenciamento de Mesas
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-card rounded-2xl border border-border p-8 shadow-sm">
+        <div className="bg-card rounded-2xl border border-border p-5 sm:p-8 shadow-sm">
           {/* Tabs */}
-          <div className="flex gap-2 mb-6">
+          <div className="flex gap-2 mb-5 sm:mb-6">
+            <button
+              onClick={() => setIsLogin(true)}
+              className={`flex-1 py-2.5 sm:py-2 px-3 sm:px-4 rounded-lg font-medium text-sm sm:text-base transition-all ${
+                isLogin
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              <LogIn className="w-4 h-4 inline mr-1.5 sm:mr-2" />
+              Entrar
+            </button>
+            <button
+              onClick={() => setIsLogin(false)}
+              className={`flex-1 py-2.5 sm:py-2 px-3 sm:px-4 rounded-lg font-medium text-sm sm:text-base transition-all ${
+                !isLogin
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              <UserPlus className="w-4 h-4 inline mr-1.5 sm:mr-2" />
+              Cadastrar
+            </button>
           </div>
 
           {isLogin ? (
@@ -210,7 +232,7 @@ export default function Login() {
                   onChange={(e) => handleCpfChange(e.target.value, setCpf)}
                   placeholder="000.000.000-00"
                   maxLength={14}
-                  className="input-field"
+                  className="input-field text-base"
                   required
                 />
               </div>
@@ -224,7 +246,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Digite sua senha"
-                  className="input-field"
+                  className="input-field text-base"
                   required
                 />
               </div>
@@ -232,7 +254,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary w-full"
+                className="btn-primary w-full py-3.5 sm:py-3 text-base"
               >
                 {loading ? 'Entrando...' : 'Entrar'}
               </button>
@@ -248,7 +270,7 @@ export default function Login() {
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="Seu nome"
-                  className="input-field"
+                  className="input-field text-base"
                   required
                 />
               </div>
@@ -263,7 +285,7 @@ export default function Login() {
                   onChange={(e) => handleCpfChange(e.target.value, setSignupCpf)}
                   placeholder="000.000.000-00"
                   maxLength={14}
-                  className="input-field"
+                  className="input-field text-base"
                   required
                 />
               </div>
@@ -277,7 +299,7 @@ export default function Login() {
                   value={signupPassword}
                   onChange={(e) => setSignupPassword(e.target.value)}
                   placeholder="Mínimo 6 caracteres"
-                  className="input-field"
+                  className="input-field text-base"
                   required
                 />
               </div>
@@ -285,7 +307,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary w-full"
+                className="btn-primary w-full py-3.5 sm:py-3 text-base"
               >
                 {loading ? 'Criando conta...' : 'Criar Conta'}
               </button>

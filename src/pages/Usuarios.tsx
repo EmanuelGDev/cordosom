@@ -257,28 +257,28 @@ export default function Usuarios() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background safe-area-inset">
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="page-header">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/dashboard')}
-              className="btn-icon"
+              className="btn-icon flex-shrink-0"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="page-title">Usuários</h1>
+            <h1 className="text-xl sm:text-3xl font-display font-bold text-foreground">Usuários</h1>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* New User Form */}
         {showNewUser ? (
-          <div className="bg-card border border-border rounded-xl p-6 mb-6 animate-fade-in">
-            <h3 className="font-semibold text-foreground mb-4">Novo Usuário</h3>
+          <div className="bg-card border border-border rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 animate-fade-in">
+            <h3 className="font-semibold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">Novo Usuário</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
@@ -289,7 +289,7 @@ export default function Usuarios() {
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="Nome do usuário"
-                  className="input-field"
+                  className="input-field text-base"
                 />
               </div>
               <div>
@@ -302,7 +302,7 @@ export default function Usuarios() {
                   onChange={(e) => setCpf(formatCPF(e.target.value))}
                   placeholder="000.000.000-00"
                   maxLength={14}
-                  className="input-field"
+                  className="input-field text-base"
                 />
               </div>
               <div>
@@ -314,11 +314,11 @@ export default function Usuarios() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 6 caracteres"
-                  className="input-field"
+                  className="input-field text-base"
                 />
               </div>
               <div>
-                <label className="flex items-center gap-3 cursor-pointer">
+                <label className="flex items-center gap-3 cursor-pointer py-1">
                   <input
                     type="checkbox"
                     checked={isNewAdmin}
@@ -330,11 +330,11 @@ export default function Usuarios() {
                   </span>
                 </label>
               </div>
-              <div className="flex gap-3">
-                <button onClick={handleCreateUser} className="btn-primary">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <button onClick={handleCreateUser} className="btn-primary py-3 sm:py-2">
                   Criar Usuário
                 </button>
-                <button onClick={resetForm} className="btn-secondary">
+                <button onClick={resetForm} className="btn-secondary py-3 sm:py-2">
                   Cancelar
                 </button>
               </div>
@@ -343,7 +343,7 @@ export default function Usuarios() {
         ) : (
           <button
             onClick={() => setShowNewUser(true)}
-            className="w-full mb-6 py-4 border-2 border-dashed border-border rounded-xl text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+            className="w-full mb-4 sm:mb-6 py-4 border-2 border-dashed border-border rounded-xl text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2 active:bg-primary/5"
           >
             <Plus className="w-5 h-5" />
             Novo Usuário
@@ -358,14 +358,14 @@ export default function Usuarios() {
             </div>
           </div>
         ) : users.length === 0 ? (
-          <div className="empty-state">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Users className="w-8 h-8 text-muted-foreground" />
+          <div className="empty-state py-12 sm:py-16">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Users className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
               Nenhum usuário cadastrado
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Adicione usuários para começar
             </p>
           </div>
@@ -374,7 +374,7 @@ export default function Usuarios() {
             {users.map((user, index) => (
               <div
                 key={user.user_id}
-                className="p-4 bg-card border border-border rounded-lg animate-fade-in"
+                className="p-3 sm:p-4 bg-card border border-border rounded-lg animate-fade-in"
                 style={{ animationDelay: `${index * 30}ms` }}
               >
                 {editingUser?.user_id === user.user_id ? (
@@ -383,10 +383,10 @@ export default function Usuarios() {
                       type="text"
                       value={editNome}
                       onChange={(e) => setEditNome(e.target.value)}
-                      className="input-field"
+                      className="input-field text-base"
                       placeholder="Nome"
                     />
-                    <label className="flex items-center gap-3 cursor-pointer">
+                    <label className="flex items-center gap-3 cursor-pointer py-1">
                       <input
                         type="checkbox"
                         checked={editIsAdmin}
@@ -397,51 +397,51 @@ export default function Usuarios() {
                         Administrador
                       </span>
                     </label>
-                    <div className="flex gap-2">
-                      <button onClick={handleUpdateUser} className="btn-primary flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <button onClick={handleUpdateUser} className="btn-primary flex items-center justify-center gap-2 py-3 sm:py-2">
                         <Check className="w-4 h-4" />
                         Salvar
                       </button>
-                      <button onClick={cancelEditing} className="btn-secondary flex items-center gap-2">
+                      <button onClick={cancelEditing} className="btn-secondary flex items-center justify-center gap-2 py-3 sm:py-2">
                         <X className="w-4 h-4" />
                         Cancelar
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                         user.role === 'admin' ? 'bg-primary/10' : 'bg-muted'
                       }`}>
                         {user.role === 'admin' ? (
-                          <Shield className="w-5 h-5 text-primary" />
+                          <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                         ) : (
-                          <User className="w-5 h-5 text-muted-foreground" />
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                         )}
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground">{user.nome}</p>
-                        <p className="text-sm text-muted-foreground">
+                      <div className="min-w-0">
+                        <p className="font-medium text-foreground text-sm sm:text-base truncate">{user.nome}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
                           CPF: {displayCPF(user.cpf)}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`status-badge ${
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                      <span className={`status-badge text-[10px] sm:text-xs hidden sm:inline-flex ${
                         user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
                       }`}>
                         {user.role === 'admin' ? 'Admin' : 'Usuário'}
                       </span>
                       <button
                         onClick={() => startEditing(user)}
-                        className="btn-icon hover:bg-primary/10 hover:text-primary"
+                        className="btn-icon w-8 h-8 sm:w-10 sm:h-10 hover:bg-primary/10 hover:text-primary"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => setUserToDelete(user)}
-                        className="btn-icon hover:bg-destructive/10 hover:text-destructive"
+                        className="btn-icon w-8 h-8 sm:w-10 sm:h-10 hover:bg-destructive/10 hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -456,18 +456,18 @@ export default function Usuarios() {
 
       {/* Delete User Dialog */}
       <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-[90vw] sm:max-w-lg rounded-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir {userToDelete?.nome}?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-lg sm:text-xl">Excluir {userToDelete?.nome}?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
               Essa ação irá excluir permanentemente o usuário. Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel className="w-full sm:w-auto">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteUser}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Excluir
             </AlertDialogAction>
