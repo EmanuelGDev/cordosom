@@ -30,7 +30,7 @@ export default function Dashboard() {
             </div>
             <div>
               <h1 className="font-display font-bold text-lg text-foreground">
-                Mesa Manager
+                Cor Do Som
               </h1>
               <p className="text-sm text-muted-foreground">
                 Olá, <span className="font-medium text-foreground">{profile?.nome || 'Usuário'}</span>
