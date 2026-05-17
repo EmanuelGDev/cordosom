@@ -23,4 +23,3 @@ dist-ssr
 *.sln
 *.sw?
 
-certs/chave_privada.key
