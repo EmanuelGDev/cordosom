@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ArrowLeft, Plus, Package, Trash2 } from 'lucide-react';
+import { useProtocol } from '@/hooks/useProtocol';
 
 interface Product {
   id: string;
@@ -16,6 +17,7 @@ interface Product {
 const productTypes = ['Bebida', 'Cerveja', 'Porção', 'Bolinho', 'Prato'] as const;
 
 export default function Produtos() {
+  useProtocol();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);

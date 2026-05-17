@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useProtocol } from '@/hooks/useProtocol';
 
 interface UserProfile {
   user_id: string;
@@ -24,6 +25,7 @@ interface UserProfile {
 }
 
 export default function Usuarios() {
+  useProtocol();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);

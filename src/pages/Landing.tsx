@@ -10,8 +10,10 @@ import {
   Smartphone,
   ChevronDown,
 } from 'lucide-react';
+import { useProtocol } from '@/hooks/useProtocol';
 
 export default function Landing() {
+  useProtocol();
   const navigate = useNavigate();
   const { user } = useAuth();
 

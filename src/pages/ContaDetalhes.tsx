@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Plus, ShoppingBag, Clock, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useProtocol } from '@/hooks/useProtocol';
 
 interface Mesa {
   id: string;
@@ -34,6 +35,7 @@ interface Product {
 }
 
 export default function ContaDetalhes() {
+  useProtocol();
   const navigate = useNavigate();
   const { mesaId, contaId } = useParams<{ mesaId: string; contaId: string }>();
   const [mesa, setMesa] = useState<Mesa | null>(null);

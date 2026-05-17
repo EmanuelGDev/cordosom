@@ -15,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useProtocol } from '@/hooks/useProtocol';
 
 interface Mesa {
   id: string;
@@ -24,6 +25,7 @@ interface Mesa {
 }
 
 export default function Mesas() {
+  useProtocol();
   const navigate = useNavigate();
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [loading, setLoading] = useState(true);

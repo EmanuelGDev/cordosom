@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { UtensilsCrossed, LogOut, LayoutGrid, Package, Users } from 'lucide-react';
+import { useProtocol } from '@/hooks/useProtocol';
 
 export default function Dashboard() {
+  useProtocol();
   const navigate = useNavigate();
   const { profile, isAdmin, signOut, loading } = useAuth();
 
