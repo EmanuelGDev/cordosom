@@ -8,11 +8,11 @@ export default function Login() {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
-  
+
   // Login fields
   const [cpf, setCpf] = useState('');
   const [password, setPassword] = useState('');
-  
+
   // Signup fields
   const [nome, setNome] = useState('');
   const [signupCpf, setSignupCpf] = useState('');
@@ -59,7 +59,7 @@ export default function Login() {
 
       // Get user email from auth
       const userProfile = profileData[0];
-      
+
       // We need to use email for login, so we'll use CPF as part of email
       const userEmail = `${cleanedCpf}@restaurante.local`;
 
@@ -291,6 +291,16 @@ export default function Login() {
               </button>
             </form>
           )}
+        </div>
+        <div className="text-center mt-4">
+          <a
+            href="http://localhost:3000/politica.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-muted-foreground hover:text-primary underline underline-offset-4 transition-colors"
+          >
+            Política de Segurança
+          </a>
         </div>
       </div>
     </div>
