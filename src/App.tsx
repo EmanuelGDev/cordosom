@@ -13,13 +13,15 @@ import ContaDetalhes from "./pages/ContaDetalhes";
 import Produtos from "./pages/Produtos";
 import Usuarios from "./pages/Usuarios";
 import NotFound from "./pages/NotFound";
+import { useRestoreSession } from "./hooks/useRestoreSession";
+import { useProtocol } from "./hooks/useProtocol";
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children, restoring }: { children: React.ReactNode, restoring: boolean }) {
   const { user, loading } = useAuth();
 
-  if (loading) {
+  if (loading || restoring) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-pulse text-muted-foreground">Carregando...</div>
@@ -53,6 +55,17 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
+  const { restoring } = useRestoreSession();
+  useProtocol();
+
+  if (restoring) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Carregando...</div>
+      </div>
+    );
+  }
+
   return (
     <Routes>
       <Route
@@ -66,7 +79,7 @@ function AppRoutes() {
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute restoring={restoring}>
             <Dashboard />
           </ProtectedRoute>
         }
@@ -74,7 +87,7 @@ function AppRoutes() {
       <Route
         path="/mesas"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute restoring={restoring}>
             <Mesas />
           </ProtectedRoute>
         }
@@ -82,7 +95,7 @@ function AppRoutes() {
       <Route
         path="/mesas/:mesaId/contas"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute restoring={restoring}>
             <Contas />
           </ProtectedRoute>
         }
@@ -90,7 +103,7 @@ function AppRoutes() {
       <Route
         path="/mesas/:mesaId/contas/:contaId"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute restoring={restoring}>
             <ContaDetalhes />
           </ProtectedRoute>
         }
@@ -98,7 +111,7 @@ function AppRoutes() {
       <Route
         path="/produtos"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute restoring={restoring}>
             <Produtos />
           </ProtectedRoute>
         }
@@ -106,7 +119,7 @@ function AppRoutes() {
       <Route
         path="/usuarios"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute restoring={restoring}>
             <Usuarios />
           </ProtectedRoute>
         }

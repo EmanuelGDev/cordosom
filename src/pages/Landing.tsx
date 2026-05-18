@@ -230,6 +230,16 @@ export default function Landing() {
             Sistema de Gerenciamento de Mesas
           </p>
         </div>
+                <div className="text-center mt-4">
+          <a
+            href="http://localhost:3000/politica.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-muted-foreground hover:text-primary underline underline-offset-4 transition-colors"
+          >
+            Política de Segurança
+          </a>
+        </div>
       </footer>
     </div>
   );

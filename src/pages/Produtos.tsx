@@ -17,11 +17,12 @@ interface Product {
 const productTypes = ['Bebida', 'Cerveja', 'Porção', 'Bolinho', 'Prato'] as const;
 
 export default function Produtos() {
+  
   useProtocol();
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
+  const { isAdmin, loading: authLoading } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [showNewProduct, setShowNewProduct] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grouped'>('grouped');
   
@@ -31,12 +32,14 @@ export default function Produtos() {
   const [preco, setPreco] = useState('');
 
   useEffect(() => {
+    console.log('authLoading:', authLoading, '| isAdmin:', isAdmin);
+    if (authLoading) return;
     if (!isAdmin) {
       navigate('/dashboard');
       return;
     }
     fetchProducts();
-  }, [isAdmin]);
+  }, [isAdmin, authLoading]);
 
   const fetchProducts = async () => {
     const { data, error } = await supabase
@@ -50,7 +53,7 @@ export default function Produtos() {
     } else {
       setProducts(data || []);
     }
-    setLoading(false);
+    setLoadingProducts(false);
   };
 
   const handleCreateProduct = async () => {
@@ -122,6 +125,14 @@ export default function Produtos() {
     return acc;
   }, {} as Record<string, Product[]>);
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Carregando...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background safe-area-inset">
       {/* Header */}
@@ -139,7 +150,6 @@ export default function Produtos() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* View Toggle */}
         <div className="flex gap-2 mb-4 sm:mb-6">
@@ -171,9 +181,7 @@ export default function Produtos() {
             <h3 className="font-semibold text-foreground mb-3 sm:mb-4 text-sm sm:text-base">Novo Produto</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Nome
-                </label>
+                <label className="block text-sm font-medium text-foreground mb-2">Nome</label>
                 <input
                   type="text"
                   value={nome}
@@ -183,9 +191,7 @@ export default function Produtos() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Tipo
-                </label>
+                <label className="block text-sm font-medium text-foreground mb-2">Tipo</label>
                 <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {productTypes.map((t) => (
                     <button
@@ -203,9 +209,7 @@ export default function Produtos() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Preço
-                </label>
+                <label className="block text-sm font-medium text-foreground mb-2">Preço</label>
                 <input
                   type="text"
                   value={preco}
@@ -234,53 +238,37 @@ export default function Produtos() {
           </button>
         )}
 
-        {/* Loading */}
-        {loading ? (
+        {/* Loading produtos */}
+        {loadingProducts ? (
           <div className="text-center py-12">
-            <div className="animate-pulse text-muted-foreground">
-              Carregando produtos...
-            </div>
+            <div className="animate-pulse text-muted-foreground">Carregando produtos...</div>
           </div>
         ) : products.length === 0 ? (
           <div className="empty-state py-12 sm:py-16">
             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-muted flex items-center justify-center mb-4">
               <Package className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
-              Nenhum produto cadastrado
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Adicione produtos para começar
-            </p>
+            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">Nenhum produto cadastrado</h3>
+            <p className="text-sm text-muted-foreground">Adicione produtos para começar</p>
           </div>
         ) : viewMode === 'grouped' ? (
           <div className="space-y-5 sm:space-y-6">
             {productTypes.map((type) => {
               const typeProducts = groupedProducts[type];
               if (typeProducts.length === 0) return null;
-              
               return (
                 <div key={type} className="animate-fade-in">
                   <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 sm:mb-3 flex items-center gap-2">
                     <Package className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     {type}
-                    <span className="text-xs sm:text-sm font-normal text-muted-foreground">
-                      ({typeProducts.length})
-                    </span>
+                    <span className="text-xs sm:text-sm font-normal text-muted-foreground">({typeProducts.length})</span>
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                     {typeProducts.map((product) => (
-                      <div
-                        key={product.id}
-                        className="flex items-center justify-between p-3 sm:p-4 bg-card border border-border rounded-lg"
-                      >
+                      <div key={product.id} className="flex items-center justify-between p-3 sm:p-4 bg-card border border-border rounded-lg">
                         <div className="min-w-0">
-                          <p className="font-medium text-foreground text-sm sm:text-base truncate">
-                            {product.nome}
-                          </p>
-                          <p className="text-xs sm:text-sm font-semibold price-tag">
-                            {formatCurrency(product.preco)}
-                          </p>
+                          <p className="font-medium text-foreground text-sm sm:text-base truncate">{product.nome}</p>
+                          <p className="text-xs sm:text-sm font-semibold price-tag">{formatCurrency(product.preco)}</p>
                         </div>
                         <button
                           onClick={() => handleDeleteProduct(product.id, product.nome)}
@@ -298,10 +286,7 @@ export default function Produtos() {
         ) : (
           <div className="space-y-2">
             {products.map((product) => (
-              <div
-                key={product.id}
-                className="flex items-center justify-between p-3 sm:p-4 bg-card border border-border rounded-lg"
-              >
+              <div key={product.id} className="flex items-center justify-between p-3 sm:p-4 bg-card border border-border rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                     <Package className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
@@ -312,9 +297,7 @@ export default function Produtos() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                  <span className="font-semibold price-tag text-sm sm:text-base">
-                    {formatCurrency(product.preco)}
-                  </span>
+                  <span className="font-semibold price-tag text-sm sm:text-base">{formatCurrency(product.preco)}</span>
                   <button
                     onClick={() => handleDeleteProduct(product.id, product.nome)}
                     className="btn-icon w-8 h-8 sm:w-10 sm:h-10 hover:bg-destructive/10 hover:text-destructive"

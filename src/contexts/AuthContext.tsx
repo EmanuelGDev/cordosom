@@ -28,7 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = async (userId: string) => {
-    // Fetch profile
     const { data: profileData } = await supabase
       .from('profiles')
       .select('user_id, nome, cpf')
@@ -39,7 +38,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(profileData);
     }
 
-    // Fetch role
     const { data: roleData } = await supabase
       .from('user_roles')
       .select('role')
@@ -47,46 +45,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .maybeSingle();
 
     setIsAdmin(roleData?.role === 'admin');
+
+    // Só libera o loading DEPOIS de buscar perfil e role
+    setLoading(false);
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
+          // Não chama setLoading(false) aqui — espera o fetchUserData
           setTimeout(() => {
             fetchUserData(session.user.id);
           }, 0);
         } else {
           setProfile(null);
           setIsAdmin(false);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
         fetchUserData(session.user.id);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
   };
 
@@ -97,17 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        profile,
-        isAdmin,
-        loading,
-        signIn,
-        signOut,
-      }}
-    >
+    <AuthContext.Provider value={{ user, session, profile, isAdmin, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
